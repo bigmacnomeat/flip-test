@@ -13,13 +13,20 @@
 </head>
 <body>
     <h1>flip for fortune</h1>
+    <img id="coinImage" src="images/heads.png" alt="Coin Image"> <!-- Default image -->
     <button onclick="playGame()">Flip Coin</button>
     <div id="result"></div>
-
-    <script>
-        function playGame() {
+function playGame() {
             let result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Result: " + result;
+
+            // Change the coin image based on the result
+            let coinImage = document.getElementById("coinImage");
+            if (result === "Heads") {
+                coinImage.src = "images/heads.png"; // Change to heads image
+            } else {
+                coinImage.src = "images/tails.png"; // Change to tails image
+            }
         }
     </script>
 </body>

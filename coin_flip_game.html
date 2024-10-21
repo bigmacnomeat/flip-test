@@ -3,24 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flip for Fortune</title> <!-- Updated Title -->
+    <title>Flip for Fortune</title>
     <style>
         body { text-align: center; margin-top: 100px; }
-        button { padding: 10px 20px; font-size: 18px; }
+        button { padding: 10px 20px; font-size: 18px; margin: 5px; }
         #result { font-size: 24px; margin-top: 20px; }
         img { width: 100px; height: 100px; margin-top: 20px; } /* Set image size */
+        .mineSelection { display: none; } /* Hide mine selection initially */
     </style>
 </head>
 <body>
-    <h1>Flip for Fortune</h1> <!-- Updated Heading -->
+    <h1>Flip for Fortune</h1>
     <img id="coinImage" src="images/heads.png" alt="Coin Image"> <!-- Default image -->
-    <button onclick="playGame()">Flip Coin</button>
+    
+    <h2>Select the number of mines:</h2>
+    <button onclick="selectMines(1)">1 Mine</button>
+    <button onclick="selectMines(5)">5 Mines</button>
+    <button onclick="selectMines(20)">20 Mines</button>
+
+    <div class="mineSelection">
+        <h2>Pick Heads or Tails:</h2>
+        <button onclick="playGame('Heads')">Heads</button>
+        <button onclick="playGame('Tails')">Tails</button>
+    </div>
+
     <div id="result"></div>
 
     <script>
-        function playGame() {
+        let selectedMines = 0;
+
+        function selectMines(mines) {
+            selectedMines = mines; // Store selected mines
+            document.querySelector('.mineSelection').style.display = 'block'; // Show heads/tails selection
+            document.getElementById("result").innerHTML = ""; // Clear previous results
+        }
+
+        function playGame(userChoice) {
             let result = Math.random() < 0.5 ? "Heads" : "Tails";
-            document.getElementById("result").innerHTML = "Result: " + result;
+            document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
             // Change the coin image based on the result
             let coinImage = document.getElementById("coinImage");
@@ -28,6 +48,13 @@
                 coinImage.src = "images/heads.png"; // Change to heads image
             } else {
                 coinImage.src = "images/tails.png"; // Change to tails image
+            }
+
+            // Check if the user won or lost
+            if (userChoice === result) {
+                document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
+            } else {
+                document.getElementById("result").innerHTML += `You lose!`;
             }
         }
     </script>

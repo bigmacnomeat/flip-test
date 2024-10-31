@@ -77,16 +77,12 @@
         }
 
         async function playGame(userChoice) {
-            let result = Math.random() < 0.5 ? "Heads" : "Tails";
+            let result = Math.random() < 0.5 ? "Heads" : "Tails"; // Randomly determine the result
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
             // Change the coin image based on the result
             let coinImage = document.getElementById("coinImage");
-            if (result === "Heads") {
-                coinImage.src = "images/heads.png"; // Change to heads image
-            } else {
-                coinImage.src = "images/tails.png"; // Change to tails image
-            }
+            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png"; // Update image
 
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
             

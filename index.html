@@ -116,6 +116,8 @@
 
         async function transferSol(fromWallet, toWallet, amount) {
             const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'); // Connect to mainnet
+
+            // Create a transaction
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({
                     fromPubkey: new solanaWeb3.PublicKey(fromWallet),
@@ -124,6 +126,7 @@
                 })
             );
 
+            // Get recent blockhash and prepare the transaction
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);

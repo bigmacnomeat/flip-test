@@ -50,6 +50,7 @@
         }
 
         async function transferSol(toWallet, amount) {
+            // Make sure to reference solanaWeb3 correctly
             const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({

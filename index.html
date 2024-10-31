@@ -39,7 +39,7 @@
             right: 20px; 
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/@solana/web3.js/1.35.0/web3.min.js"></script> <!-- Updated to a valid Solana Web3.js version -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/@solana/web3.js/1.35.0/web3.min.js"></script> <!-- Add Solana Web3.js -->
     <script src="https://unpkg.com/@project-serum/anchor@0.18.0/dist/anchor.min.js"></script> <!-- Add Anchor.js -->
 </head>
 <body>
@@ -70,6 +70,10 @@
             20: 0.10
         };
 
+        // Establish connection to Solana Mainnet
+        let connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+        console.log("Connected to Solana Mainnet Beta");
+
         function selectMines(mines) {
             selectedMines = mines; // Store selected mines
             document.querySelector('.mineSelection').style.display = 'block'; // Show heads/tails selection
@@ -82,7 +86,7 @@
 
             // Change the coin image based on the result
             let coinImage = document.getElementById("coinImage");
-            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png"; // Change to corresponding image
+            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png"; // Change image
 
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
             
@@ -115,23 +119,18 @@
         }
 
         async function transferSol(fromWallet, toWallet, amount) {
-            const connection = new window.solanaWeb3.Connection(window.solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'); // Connect to mainnet
-
-            // Create a transaction
-            const transaction = new window.solanaWeb3.Transaction().add(
-                window.solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new window.solanaWeb3.PublicKey(fromWallet),
-                    toPubkey: new window.solanaWeb3.PublicKey(toWallet),
+            const transaction = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: new solanaWeb3.PublicKey(fromWallet),
+                    toPubkey: new solanaWeb3.PublicKey(toWallet),
                     lamports: amount,
                 })
             );
 
-            // Get recent blockhash and prepare the transaction
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
-            transaction.feePayer = new window.solanaWeb3.PublicKey(fromWallet);
+            transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
 
-            // Sign the transaction using the Phantom wallet
             const signedTransaction = await window.solana.signTransaction(transaction);
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());
             await connection.confirmTransaction(signature);

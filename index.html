@@ -9,11 +9,6 @@
         body {
             text-align: center;
             margin-top: 100px;
-            background-image: url('images/background.jpg');
-            background-size: 50%;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
             color: orange;
             font-size: 24px;
         }
@@ -26,24 +21,13 @@
             font-size: 28px;
             margin-top: 20px;
         }
-        img {
-            width: 100px;
-            height: 100px;
-            margin-top: 20px;
-        }
         .mineSelection {
             display: none;
-        }
-        #connectButton {
-            position: absolute;
-            top: 20px;
-            right: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Flip for Fortune</h1>
-    <img id="coinImage" src="images/heads.png" alt="Coin Image"> <!-- Default image -->
 
     <h2>Select the number of mines:</h2>
     <button onclick="selectMines(1)">1 Mine (0.03 SOL)</button>
@@ -62,15 +46,11 @@
     <script>
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
-        const mineValues = {
-            1: 0.03,
-            5: 0.05,
-            20: 0.10
-        };
+        const mineValues = { 1: 0.03, 5: 0.05, 20: 0.10 };
         const sourceAddress = "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr"; // Source address
 
         function selectMines(mines) {
-            selectedMines = mines; // Store selected mines
+            selectedMines = mines;
             document.querySelector('.mineSelection').style.display = 'block'; // Show heads/tails selection
             document.getElementById("result").innerHTML = ""; // Clear previous results
         }
@@ -84,18 +64,15 @@
             const result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
-            // Change the coin image based on the result
-            document.getElementById("coinImage").src = result === "Heads" ? "images/heads.png" : "images/tails.png";
-
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
 
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                await transferSol(sourceAddress, userWallet, amountToTransfer);
+                await transferSol(sourceAddress, userWallet, amountToTransfer); // Transfer from the source to the user
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol(userWallet, sourceAddress, amountToTransfer);
+                await transferSol(userWallet, sourceAddress, amountToTransfer); // Transfer from the user to the source
             }
         }
 

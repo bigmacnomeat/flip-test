@@ -3,58 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Web App</title>
+    <title>Flip for Fortune</title>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.32.0/dist/web3.min.js"></script> <!-- Load Solana Web3 library -->
     <style>
         body {
             text-align: center;
-            margin-top: 100px;
+            margin-top: 50px;
             background-image: url('images/background.jpg'); /* Ensure this path is correct */
-            background-size: cover; /* Make the background image cover the whole area */
-            color: orange; /* Change text color to orange */
-            font-size: 24px; /* Increase font size */
+            background-size: cover; /* Make the background image cover the entire body */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Prevent the image from repeating */
+            color: orange;
+            font-size: 24px;
         }
         button {
             padding: 10px 20px;
-            font-size: 20px; /* Slightly increase button font size */
+            font-size: 20px;
             margin: 5px;
         }
         #result {
-            font-size: 28px; /* Increase result font size */
+            font-size: 28px;
             margin-top: 20px;
+        }
+        .mineSelection {
+            display: none;
+        }
+        #connectButton {
+            position: absolute; /* Position the button in the top right */
+            top: 20px;
+            right: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Solana Web App</h1>
-    <button id="connectButton">Connect Wallet</button>
-    <button id="playButton" style="display: none;">Play Game</button>
-    <div id="result"></div>
+    <h1>Flip for Fortune</h1>
 
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.68.0/lib/index.js"></script>
+    <h2>Select the number of mines:</h2>
+    <button onclick="selectMines(1)">1 Mine (0.03 SOL)</button>
+    <button onclick="selectMines(5)">5 Mines (0.05 SOL)</button>
+    <button onclick="selectMines(20)">20 Mines (0.10 SOL)</button>
+
+    <div class="mineSelection">
+        <h2>Pick Heads or Tails:</h2>
+        <button onclick="playGame('Heads')">Heads</button>
+        <button onclick="playGame('Tails')">Tails</button>
+    </div>
+
+    <div id="result"></div>
+    <button id="connectButton" onclick="connectWallet()">Connect Wallet</button>
+
     <script>
-        let userWallet;
+        let selectedMines = 0;
+        let userWallet; // To store user's wallet address
+        const mineValues = { 1: 0.03 * 1_000_000_000, 5: 0.05 * 1_000_000_000, 20: 0.10 * 1_000_000_000 }; // Amount in lamports
+        const sourceAddress = "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr"; // Source address
+
+        function selectMines(mines) {
+            selectedMines = mines;
+            document.querySelector('.mineSelection').style.display = 'block'; // Show heads/tails selection
+            document.getElementById("result").innerHTML = ""; // Clear previous results
+        }
+
+        async function playGame(userChoice) {
+            if (!userWallet) {
+                alert("Please connect your wallet first.");
+                return;
+            }
+
+            const result = Math.random() < 0.5 ? "Heads" : "Tails"; // Random result
+            document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
+
+            // Check if the user won or lost
+            if (userChoice === result) {
+                document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
+                await transferSol(sourceAddress, userWallet, mineValues[selectedMines]); // Transfer from the source to the user
+            } else {
+                document.getElementById("result").innerHTML += `You lose!`;
+                await transferSol(userWallet, sourceAddress, mineValues[selectedMines]); // Transfer from the user to the source
+            }
+        }
 
         async function connectWallet() {
             if (window.solana && window.solana.isPhantom) {
                 try {
                     const response = await window.solana.connect();
-                    userWallet = response.publicKey.toString();
+                    userWallet = response.publicKey.toString(); // Store user's wallet address
                     document.getElementById("connectButton").innerText = "Connected";
-                    document.getElementById("playButton").style.display = 'block';
+                    document.getElementById("connectButton").disabled = true; // Disable the button after connecting
+                    console.log("Connected wallet:", userWallet); // Log connected wallet
                 } catch (err) {
                     console.error("Connection failed:", err);
+                    alert("Connection failed. Please try again.");
                 }
             } else {
                 alert("Phantom wallet not found. Please install it.");
             }
         }
 
-        async function transferSol(toWallet, amount) {
-            // Make sure to reference solanaWeb3 correctly
+        async function transferSol(fromWallet, toWallet, amount) {
             const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new solanaWeb3.PublicKey(userWallet),
+                    fromPubkey: new solanaWeb3.PublicKey(fromWallet),
                     toPubkey: new solanaWeb3.PublicKey(toWallet),
                     lamports: amount,
                 })
@@ -62,28 +112,20 @@
 
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
-            transaction.feePayer = new solanaWeb3.PublicKey(userWallet);
+            transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
 
-            // Sign and send the transaction
             try {
+                // Ask the Phantom wallet to sign the transaction
                 const signedTransaction = await window.solana.signTransaction(transaction);
                 const signature = await connection.sendRawTransaction(signedTransaction.serialize());
                 await connection.confirmTransaction(signature);
-                document.getElementById("result").innerText = "Transfer successful: " + signature;
+                console.log("Transfer successful:", signature);
+                alert(`Transfer successful: ${signature}`);
             } catch (error) {
                 console.error("Transaction failed:", error);
-                document.getElementById("result").innerText = "Transaction failed: " + error.message;
+                alert("Transaction failed. Check console for more info.");
             }
         }
-
-        document.getElementById('connectButton').addEventListener('click', connectWallet);
-
-        // Example: Calling transferSol when the "Play Game" button is clicked
-        document.getElementById('playButton').addEventListener('click', function () {
-            const amount = 1000000000; // Amount in lamports (1 SOL = 1,000,000,000 lamports)
-            const toWallet = "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr"; // Replace with the actual wallet address
-            transferSol(toWallet, amount);
-        });
     </script>
 </body>
 </html>

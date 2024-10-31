@@ -77,12 +77,16 @@
         }
 
         async function playGame(userChoice) {
-            let result = Math.random() < 0.5 ? "Heads" : "Tails"; // Randomly determine the result
+            let result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
             // Change the coin image based on the result
             let coinImage = document.getElementById("coinImage");
-            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png"; // Update image
+            if (result === "Heads") {
+                coinImage.src = "images/heads.png"; // Change to heads image
+            } else {
+                coinImage.src = "images/tails.png"; // Change to tails image
+            }
 
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
             
@@ -115,7 +119,7 @@
         }
 
         async function transferSol(fromWallet, toWallet, amount) {
-            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('testnet'), 'confirmed');
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'); // Connect to mainnet
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({
                     fromPubkey: new solanaWeb3.PublicKey(fromWallet),

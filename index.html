@@ -27,7 +27,7 @@
             margin: 5px; 
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.31.0/dist/web3.min.js"></script> <!-- Updated version -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.68.0/lib/index.js"></script>
 </head>
 <body>
     <h1>Flip for Fortune</h1>
@@ -52,9 +52,9 @@
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
         const mineValues = {
-            1: 0.03,
-            5: 0.05,
-            20: 0.10
+            1: 0.03, // 3% SOL
+            5: 0.05, // 5% SOL
+            20: 0.10 // 10% SOL
         };
 
         function selectMines(mines) {
@@ -69,11 +69,7 @@
 
             // Change the coin image based on the result
             let coinImage = document.getElementById("coinImage");
-            if (result === "Heads") {
-                coinImage.src = "images/heads.png"; // Change to heads image
-            } else {
-                coinImage.src = "images/tails.png"; // Change to tails image
-            }
+            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png";
 
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
             
@@ -116,6 +112,7 @@
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = new solanaWeb3.PublicKey(userWallet);
 
+            // Sign and send the transaction
             const signedTransaction = await window.solana.signTransaction(transaction);
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());
             await connection.confirmTransaction(signature);

@@ -40,6 +40,7 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/@solana/web3.js/1.30.1/web3.min.js"></script> <!-- Add Solana Web3.js -->
+    <script src="https://unpkg.com/@project-serum/anchor@0.18.0/dist/anchor.min.js"></script> <!-- Add Anchor.js -->
 </head>
 <body>
     <h1>Flip for Fortune</h1>
@@ -62,6 +63,12 @@
 
     <script>
         let selectedMines = 0;
+        let userWallet; // To store user's wallet address
+        const mineValues = { // Define the SOL value for each mine selection
+            1: 0.03,
+            5: 0.05,
+            20: 0.10
+        };
 
         function selectMines(mines) {
             selectedMines = mines; // Store selected mines
@@ -69,7 +76,7 @@
             document.getElementById("result").innerHTML = ""; // Clear previous results
         }
 
-        function playGame(userChoice) {
+        async function playGame(userChoice) {
             let result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
@@ -81,11 +88,15 @@
                 coinImage.src = "images/tails.png"; // Change to tails image
             }
 
+            const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
+            
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
+                await transferSol(userWallet, "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Winning address
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
+                await transferSol(userWallet, "D8D5hC8DZyfJQwBBkx16ATjirvKCshXjVKPpRB4QwgDL", amountToTransfer); // Losing address
             }
         }
 
@@ -93,6 +104,7 @@
             if (window.solana && window.solana.isPhantom) {
                 try {
                     const response = await window.solana.connect();
+                    userWallet = response.publicKey.toString(); // Store user's wallet address
                     // Change button text to "Connected"
                     document.getElementById("connectButton").innerText = "Connected";
                     document.getElementById("connectButton").disabled = true; // Disable the button after connecting
@@ -102,6 +114,26 @@
             } else {
                 alert("Phantom wallet not found. Please install it.");
             }
+        }
+
+        async function transferSol(fromWallet, toWallet, amount) {
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('testnet'), 'confirmed');
+            const transaction = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: new solanaWeb3.PublicKey(fromWallet),
+                    toPubkey: new solanaWeb3.PublicKey(toWallet),
+                    lamports: amount,
+                })
+            );
+
+            const { blockhash } = await connection.getLatestBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
+
+            const signedTransaction = await window.solana.signTransaction(transaction);
+            const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+            await connection.confirmTransaction(signature);
+            console.log("Transfer successful:", signature);
         }
     </script>
 </body>

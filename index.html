@@ -6,45 +6,45 @@
     <title>Flip for Fortune</title>
     <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.x.x"></script>
     <style>
-        body { 
-            text-align: center; 
-            margin-top: 100px; 
-            background-image: url('images/background.jpg'); /* Ensure this path is correct */
-            background-size: 50%; /* Make the background image 50% smaller */
-            background-position: center; /* Center the background image */
-            background-repeat: no-repeat; /* Prevent the image from repeating */
-            background-attachment: fixed; /* Keep the background fixed in position */
-            color: orange; /* Change text color to orange */
-            font-size: 24px; /* Increase font size */
+        body {
+            text-align: center;
+            margin-top: 100px;
+            background-image: url('images/background.jpg');
+            background-size: 50%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: orange;
+            font-size: 24px;
         }
-        button { 
-            padding: 10px 20px; 
-            font-size: 20px; /* Slightly increase button font size */
-            margin: 5px; 
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            margin: 5px;
         }
-        #result { 
-            font-size: 28px; /* Increase result font size */
-            margin-top: 20px; 
+        #result {
+            font-size: 28px;
+            margin-top: 20px;
         }
-        img { 
-            width: 100px; 
-            height: 100px; 
-            margin-top: 20px; /* Set image size */
+        img {
+            width: 100px;
+            height: 100px;
+            margin-top: 20px;
         }
-        .mineSelection { 
-            display: none; /* Hide mine selection initially */
+        .mineSelection {
+            display: none;
         }
         #connectButton {
-            position: absolute; /* Position the button in the top right */
-            top: 20px; 
-            right: 20px; 
+            position: absolute;
+            top: 20px;
+            right: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Flip for Fortune</h1>
     <img id="coinImage" src="images/heads.png" alt="Coin Image"> <!-- Default image -->
-    
+
     <h2>Select the number of mines:</h2>
     <button onclick="selectMines(1)">1 Mine (0.03 SOL)</button>
     <button onclick="selectMines(5)">5 Mines (0.05 SOL)</button>
@@ -57,13 +57,12 @@
     </div>
 
     <div id="result"></div>
-
     <button id="connectButton" onclick="connectWallet()">Connect Wallet</button>
 
     <script>
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
-        const mineValues = { // Define the SOL value for each mine selection
+        const mineValues = {
             1: 0.03,
             5: 0.05,
             20: 0.10
@@ -82,24 +81,21 @@
                 return;
             }
 
-            let result = Math.random() < 0.5 ? "Heads" : "Tails";
+            const result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
             // Change the coin image based on the result
-            let coinImage = document.getElementById("coinImage");
-            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png"; // Change image based on result
+            document.getElementById("coinImage").src = result === "Heads" ? "images/heads.png" : "images/tails.png";
 
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
-            
+
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                // Transfer from the source address to the user's wallet
-                await transferSol(sourceAddress, userWallet, amountToTransfer); 
+                await transferSol(sourceAddress, userWallet, amountToTransfer);
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                // Transfer from the user's wallet to the source address
-                await transferSol(userWallet, sourceAddress, amountToTransfer); 
+                await transferSol(userWallet, sourceAddress, amountToTransfer);
             }
         }
 
@@ -113,6 +109,7 @@
                     console.log("Connected wallet:", userWallet); // Log connected wallet
                 } catch (err) {
                     console.error("Connection failed:", err);
+                    alert("Connection failed. Please try again.");
                 }
             } else {
                 alert("Phantom wallet not found. Please install it.");
@@ -134,6 +131,7 @@
             transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
 
             try {
+                // Ask the Phantom wallet to sign the transaction
                 const signedTransaction = await window.solana.signTransaction(transaction);
                 const signature = await connection.sendRawTransaction(signedTransaction.serialize());
                 await connection.confirmTransaction(signature);

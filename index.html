@@ -22,12 +22,8 @@
         }
     </style>
     
-    <!-- Development (unminified for debugging) -->
-    <script src="https://unpkg.com/@solana/web3.js@rc/dist/index.development.js"></script>
-
-    <!-- Production (minified for performance) -->
-    <!-- Uncomment the line below to use the production version -->
-    <!-- <script src="https://unpkg.com/@solana/web3.js@rc/dist/index.production.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/@solana/web3.js/1.35.0/web3.min.js"></script>
+    <script src="https://unpkg.com/@project-serum/anchor@0.18.0/dist/anchor.min.js"></script>
 </head>
 <body>
     <h1>Welcome to Flip for Fortune</h1>
@@ -94,18 +90,18 @@
         }
 
         async function transferSol(fromWallet, toWallet, amount) {
-            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new solanaWeb3.PublicKey(fromWallet),
-                    toPubkey: new solanaWeb3.PublicKey(toWallet),
+            const connection = new window.solanaWeb3.Connection(window.solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+            const transaction = new window.solanaWeb3.Transaction().add(
+                window.solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: new window.solanaWeb3.PublicKey(fromWallet),
+                    toPubkey: new window.solanaWeb3.PublicKey(toWallet),
                     lamports: amount,
                 })
             );
 
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
-            transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
+            transaction.feePayer = new window.solanaWeb3.PublicKey(fromWallet);
 
             const signedTransaction = await window.solana.signTransaction(transaction);
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());

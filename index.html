@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flip for Fortune</title>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.x.x"></script> <!-- Include Solana Web3 Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.x.x"></script>
     <style>
         body { 
             text-align: center; 
@@ -77,6 +77,11 @@
         }
 
         async function playGame(userChoice) {
+            if (!userWallet) {
+                alert("Please connect your wallet first.");
+                return;
+            }
+
             let result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
@@ -89,10 +94,12 @@
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                await transferSol(sourceAddress, userWallet, amountToTransfer); // Transfer from the source address to the user's wallet
+                // Transfer from the source address to the user's wallet
+                await transferSol(sourceAddress, userWallet, amountToTransfer); 
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol(userWallet, sourceAddress, amountToTransfer); // Transfer from the user's wallet to the source address
+                // Transfer from the user's wallet to the source address
+                await transferSol(userWallet, sourceAddress, amountToTransfer); 
             }
         }
 
@@ -101,9 +108,9 @@
                 try {
                     const response = await window.solana.connect();
                     userWallet = response.publicKey.toString(); // Store user's wallet address
-                    // Change button text to "Connected"
                     document.getElementById("connectButton").innerText = "Connected";
                     document.getElementById("connectButton").disabled = true; // Disable the button after connecting
+                    console.log("Connected wallet:", userWallet); // Log connected wallet
                 } catch (err) {
                     console.error("Connection failed:", err);
                 }
@@ -126,11 +133,16 @@
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
 
-            // Sign the transaction with the user's wallet
-            const signedTransaction = await window.solana.signTransaction(transaction);
-            const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-            await connection.confirmTransaction(signature);
-            console.log("Transfer successful:", signature);
+            try {
+                const signedTransaction = await window.solana.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                await connection.confirmTransaction(signature);
+                console.log("Transfer successful:", signature);
+                alert(`Transfer successful: ${signature}`);
+            } catch (error) {
+                console.error("Transaction failed:", error);
+                alert("Transaction failed. Check console for more info.");
+            }
         }
     </script>
 </body>

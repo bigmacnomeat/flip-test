@@ -39,10 +39,8 @@
             right: 20px; 
         }
     </style>
-    <script type="module">
-        // Import Solana Web3.js from the CDN
-        import * as solanaWeb3 from 'https://cdn.jsdelivr.net/npm/@solana/web3.js@1.30.1/dist/web3.min.js';
-
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.30.1"></script>
+    <script>
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
         const mineValues = {

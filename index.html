@@ -68,6 +68,7 @@
             5: 0.05,
             20: 0.10
         };
+        const sourceAddress = "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr"; // Source address
 
         function selectMines(mines) {
             selectedMines = mines; // Store selected mines
@@ -88,10 +89,10 @@
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                // Winning: no transfer needed from the user's wallet
+                await transferSol(sourceAddress, userWallet, amountToTransfer); // Transfer from the source address to the user's wallet
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol("BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", userWallet, amountToTransfer); // Transfer from BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr to user's wallet
+                await transferSol(userWallet, sourceAddress, amountToTransfer); // Transfer from the user's wallet to the source address
             }
         }
 

@@ -4,40 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flip for Fortune</title>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.32.0/dist/web3.min.js"></script> <!-- Load Solana Web3 library -->
     <style>
-        body {
-            text-align: center;
-            margin-top: 50px;
+        body { 
+            text-align: center; 
+            margin-top: 100px; 
             background-image: url('images/background.jpg'); /* Ensure this path is correct */
-            background-size: cover; /* Make the background image cover the entire body */
+            background-size: 50%; /* Make the background image 50% smaller */
             background-position: center; /* Center the background image */
             background-repeat: no-repeat; /* Prevent the image from repeating */
-            color: orange;
-            font-size: 24px;
+            background-attachment: fixed; /* Keep the background fixed in position */
+            color: orange; /* Change text color to orange */
+            font-size: 24px; /* Increase font size */
         }
-        button {
-            padding: 10px 20px;
-            font-size: 20px;
-            margin: 5px;
+        button { 
+            padding: 10px 20px; 
+            font-size: 20px; /* Slightly increase button font size */
+            margin: 5px; 
         }
-        #result {
-            font-size: 28px;
-            margin-top: 20px;
+        #result { 
+            font-size: 28px; /* Increase result font size */
+            margin-top: 20px; 
         }
-        .mineSelection {
-            display: none;
+        img { 
+            width: 100px; 
+            height: 100px; 
+            margin-top: 20px; /* Set image size */
+        }
+        .mineSelection { 
+            display: none; /* Hide mine selection initially */
         }
         #connectButton {
             position: absolute; /* Position the button in the top right */
-            top: 20px;
-            right: 20px;
+            top: 20px; 
+            right: 20px; 
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/@solana/web3.js/1.30.1/web3.min.js"></script> <!-- Add Solana Web3.js -->
+    <script src="https://unpkg.com/@project-serum/anchor@0.18.0/dist/anchor.min.js"></script> <!-- Add Anchor.js -->
 </head>
 <body>
     <h1>Flip for Fortune</h1>
-
+    <img id="coinImage" src="images/heads.png" alt="Coin Image"> <!-- Default image -->
+    
     <h2>Select the number of mines:</h2>
     <button onclick="selectMines(1)">1 Mine (0.03 SOL)</button>
     <button onclick="selectMines(5)">5 Mines (0.05 SOL)</button>
@@ -50,50 +58,60 @@
     </div>
 
     <div id="result"></div>
+
     <button id="connectButton" onclick="connectWallet()">Connect Wallet</button>
 
     <script>
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
-        const mineValues = { 1: 0.03 * 1_000_000_000, 5: 0.05 * 1_000_000_000, 20: 0.10 * 1_000_000_000 }; // Amount in lamports
-        const sourceAddress = "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr"; // Source address
+        const mineValues = { // Define the SOL value for each mine selection
+            1: 0.03,
+            5: 0.05,
+            20: 0.10
+        };
 
         function selectMines(mines) {
-            selectedMines = mines;
+            selectedMines = mines; // Store selected mines
             document.querySelector('.mineSelection').style.display = 'block'; // Show heads/tails selection
             document.getElementById("result").innerHTML = ""; // Clear previous results
         }
 
         async function playGame(userChoice) {
-            if (!userWallet) {
-                alert("Please connect your wallet first.");
-                return;
-            }
-
-            const result = Math.random() < 0.5 ? "Heads" : "Tails"; // Random result
+            let result = Math.random() < 0.5 ? "Heads" : "Tails";
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
 
+            // Change the coin image based on the result
+            let coinImage = document.getElementById("coinImage");
+            if (result === "Heads") {
+                coinImage.src = "images/heads.png"; // Change to heads image
+            } else {
+                coinImage.src = "images/tails.png"; // Change to tails image
+            }
+
+            const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
+            
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                await transferSol(sourceAddress, userWallet, mineValues[selectedMines]); // Transfer from the source to the user
+                await transferSol(userWallet, "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Winning address
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol(userWallet, sourceAddress, mineValues[selectedMines]); // Transfer from the user to the source
+                await transferSol(userWallet, "D8D5hC8DZyfJQwBBkx16ATjirvKCshXjVKPpRB4QwgDL", amountToTransfer); // Losing address
             }
         }
 
         async function connectWallet() {
-            if (window.solana && window.solana.isPhantom) {
+            // Check for Solana wallets
+            const provider = window.solana;
+            if (provider && provider.isPhantom) {
                 try {
-                    const response = await window.solana.connect();
+                    const response = await provider.connect();
                     userWallet = response.publicKey.toString(); // Store user's wallet address
+                    // Change button text to "Connected"
                     document.getElementById("connectButton").innerText = "Connected";
                     document.getElementById("connectButton").disabled = true; // Disable the button after connecting
-                    console.log("Connected wallet:", userWallet); // Log connected wallet
                 } catch (err) {
                     console.error("Connection failed:", err);
-                    alert("Connection failed. Please try again.");
                 }
             } else {
                 alert("Phantom wallet not found. Please install it.");
@@ -101,7 +119,7 @@
         }
 
         async function transferSol(fromWallet, toWallet, amount) {
-            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('testnet'), 'confirmed');
             const transaction = new solanaWeb3.Transaction().add(
                 solanaWeb3.SystemProgram.transfer({
                     fromPubkey: new solanaWeb3.PublicKey(fromWallet),
@@ -114,17 +132,10 @@
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = new solanaWeb3.PublicKey(fromWallet);
 
-            try {
-                // Ask the Phantom wallet to sign the transaction
-                const signedTransaction = await window.solana.signTransaction(transaction);
-                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-                await connection.confirmTransaction(signature);
-                console.log("Transfer successful:", signature);
-                alert(`Transfer successful: ${signature}`);
-            } catch (error) {
-                console.error("Transaction failed:", error);
-                alert("Transaction failed. Check console for more info.");
-            }
+            const signedTransaction = await window.solana.signTransaction(transaction);
+            const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+            await connection.confirmTransaction(signature);
+            console.log("Transfer successful:", signature);
         }
     </script>
 </body>

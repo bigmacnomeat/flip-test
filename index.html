@@ -40,7 +40,8 @@
         }
     </style>
     <script type="module">
-        import * as solanaWeb3 from 'https://cdn.jsdelivr.net/npm/@solana/web3.js@1.30.1/dist/web3.js';
+        // Import Solana Web3.js from the CDN
+        import * as solanaWeb3 from 'https://cdn.jsdelivr.net/npm/@solana/web3.js@1.30.1/dist/web3.min.js';
 
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
@@ -121,4 +122,19 @@
     <h1>Flip for Fortune</h1>
     <img id="coinImage" src="images/heads.png" alt="Coin Image">
     
-    <
+    <h2>Select the number of mines:</h2>
+    <button onclick="selectMines(1)">1 Mine</button>
+    <button onclick="selectMines(5)">5 Mines</button>
+    <button onclick="selectMines(20)">20 Mines</button>
+
+    <div class="mineSelection">
+        <h2>Pick Heads or Tails:</h2>
+        <button onclick="playGame('Heads')">Heads</button>
+        <button onclick="playGame('Tails')">Tails</button>
+    </div>
+
+    <div id="result"></div>
+
+    <button id="connectButton" onclick="connectWallet()">Connect Wallet</button>
+</body>
+</html>

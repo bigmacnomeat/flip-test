@@ -96,7 +96,7 @@
                 await transferSol(userWallet, "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr", amountToTransfer); // Winning address
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol(userWallet, "D8D5hC8DZyfJQwBBkx16ATjirvKCshXjVKPpRB4QwgDL", amountToTransfer); // Losing address
+                await transferSol(userWallet, userWallet, amountToTransfer); // Losing to the user's own wallet
             }
         }
 

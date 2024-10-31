@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flip for Fortune</title>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.32.0/dist/web3.min.js"></script> <!-- Correctly reference the Solana Web3 library -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.32.0/dist/web3.min.js"></script> <!-- Load Solana Web3 library -->
     <style>
         body {
             text-align: center;
-            margin-top: 100px;
+            margin-top: 50px;
             background-image: url('images/background.jpg'); /* Ensure this path is correct */
             background-size: cover; /* Make the background image cover the entire body */
             background-position: center; /* Center the background image */
@@ -55,7 +55,7 @@
     <script>
         let selectedMines = 0;
         let userWallet; // To store user's wallet address
-        const mineValues = { 1: 0.03, 5: 0.05, 20: 0.10 };
+        const mineValues = { 1: 0.03 * 1_000_000_000, 5: 0.05 * 1_000_000_000, 20: 0.10 * 1_000_000_000 }; // Amount in lamports
         const sourceAddress = "BvKeWCU3nsfW5VpzKhMd7atD5i5qeEQ2ga2t5coDagNr"; // Source address
 
         function selectMines(mines) {
@@ -70,18 +70,16 @@
                 return;
             }
 
-            const result = Math.random() < 0.5 ? "Heads" : "Tails";
+            const result = Math.random() < 0.5 ? "Heads" : "Tails"; // Random result
             document.getElementById("result").innerHTML = "Coin Result: " + result + "<br>";
-
-            const amountToTransfer = mineValues[selectedMines] * 1_000_000_000; // Convert SOL to lamports
 
             // Check if the user won or lost
             if (userChoice === result) {
                 document.getElementById("result").innerHTML += `You win ${selectedMines} mine(s)!`;
-                await transferSol(sourceAddress, userWallet, amountToTransfer); // Transfer from the source to the user
+                await transferSol(sourceAddress, userWallet, mineValues[selectedMines]); // Transfer from the source to the user
             } else {
                 document.getElementById("result").innerHTML += `You lose!`;
-                await transferSol(userWallet, sourceAddress, amountToTransfer); // Transfer from the user to the source
+                await transferSol(userWallet, sourceAddress, mineValues[selectedMines]); // Transfer from the user to the source
             }
         }
 

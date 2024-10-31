@@ -47,9 +47,9 @@
     <img id="coinImage" src="images/heads.png" alt="Coin Image"> <!-- Default image -->
     
     <h2>Select the number of mines:</h2>
-    <button onclick="selectMines(1)">1 Mine</button>
-    <button onclick="selectMines(5)">5 Mines</button>
-    <button onclick="selectMines(20)">20 Mines</button>
+    <button onclick="selectMines(1)">1 Mine (0.03 SOL)</button>
+    <button onclick="selectMines(5)">5 Mines (0.05 SOL)</button>
+    <button onclick="selectMines(20)">20 Mines (0.10 SOL)</button>
 
     <div class="mineSelection">
         <h2>Pick Heads or Tails:</h2>
@@ -101,9 +101,11 @@
         }
 
         async function connectWallet() {
-            if (window.solana && window.solana.isPhantom) {
+            // Check for Solana wallets
+            const provider = window.solana;
+            if (provider && provider.isPhantom) {
                 try {
-                    const response = await window.solana.connect();
+                    const response = await provider.connect();
                     userWallet = response.publicKey.toString(); // Store user's wallet address
                     // Change button text to "Connected"
                     document.getElementById("connectButton").innerText = "Connected";
